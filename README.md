@@ -194,6 +194,5 @@ When deploying frontend, set `VITE_API_URL` to the production API endpoint.
 
 ## License
 
-This project does not include a license file. Add a `LICENSE` file to clarify terms if you plan to open-source it.
-
+This project does not include a license file. 
 ---
