@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { signup as signupApi } from '../services/authService';
 import { useAuth } from '../components/AuthContext.jsx';
@@ -6,10 +6,17 @@ import { Container, TextField, Typography, Button, Stack, Alert, Box } from '@mu
 
 const Signup = () => {
 	const navigate = useNavigate();
-	const { login } = useAuth();
+	const { login, user } = useAuth();
 	const [form, setForm] = useState({ name: '', email: '', password: '' });
 	const [error, setError] = useState('');
 	const [loading, setLoading] = useState(false);
+
+	// Redirect to dashboard if already logged in
+	useEffect(() => {
+		if (user) {
+			navigate('/dashboard');
+		}
+	}, [user, navigate]);
 
 	const handleChange = (e) => {
 		setForm({ ...form, [e.target.name]: e.target.value });

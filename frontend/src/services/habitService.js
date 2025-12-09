@@ -22,3 +22,12 @@ export const deleteHabit = async (id, token) => {
   const res = await axios.delete(`${API_URL}/habits/${id}`, getAuthHeader(token));
   return res.data;
 };
+
+export const toggleHabitCompletion = async (habitId, completionIndex, isCompleted, token) => {
+  const res = await axios.put(
+    `${API_URL}/habits/${habitId}/completion/${completionIndex}`,
+    { isCompleted },
+    getAuthHeader(token)
+  );
+  return res.data;
+};

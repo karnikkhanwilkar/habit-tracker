@@ -3,9 +3,11 @@ import { AppBar, Toolbar, Typography, Container, CssBaseline } from '@mui/materi
 import { ThemeProvider } from '@mui/material/styles';
 import { getAppTheme } from '../theme';
 import { Link as RouterLink } from 'react-router-dom';
+import { useAuth } from './AuthContext.jsx';
 
 const Layout = ({ children }) => {
   const theme = getAppTheme();
+  const { user } = useAuth();
 
   return (
     <ThemeProvider theme={theme}>
@@ -15,9 +17,15 @@ const Layout = ({ children }) => {
           <Typography variant="h6" sx={{ flexGrow: 1 }} component={RouterLink} to="/" color="inherit" style={{ textDecoration: 'none' }}>
             Habit Tracker
           </Typography>
-          <Typography component={RouterLink} to="/dashboard" color="inherit" sx={{ mr: 2, textDecoration: 'none' }}>
-            Login
-          </Typography>
+          {user ? (
+            <Typography color="inherit" sx={{ mr: 2 }}>
+              {user.name}
+            </Typography>
+          ) : (
+            <Typography component={RouterLink} to="/dashboard" color="inherit" sx={{ mr: 2, textDecoration: 'none' }}>
+              Login
+            </Typography>
+          )}
         </Toolbar>
       </AppBar>
       <Container maxWidth="lg" sx={{ my: 3 }}>
