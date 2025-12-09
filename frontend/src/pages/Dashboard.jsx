@@ -54,10 +54,8 @@ const Dashboard = () => {
 	return (
 		<Container sx={{ py: 3 }}>
 			<Stack direction="row" justifyContent="space-between" alignItems="center">
-				<Typography variant="h5">Dashboard</Typography>
+				<Typography variant="h5">Let's build a habit together!</Typography>
 				<Stack direction="row" spacing={2} alignItems="center">
-					<Typography>Hi, {user?.name}</Typography>
-					<Button onClick={logout} variant="outlined">Logout</Button>
 				</Stack>
 			</Stack>
 
