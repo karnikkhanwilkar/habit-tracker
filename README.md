@@ -86,7 +86,7 @@ Backend environment variables (create `backend/.env`):
 
 Optional variables used by the seeding script:
 
-- `SEED_ADMIN_EMAIL` — email for seeded admin (default in code: `karnik@yahoo.com`).
+- `SEED_ADMIN_EMAIL` — email for seeded admin (default in code: `admin@gmail.com`).
 - `SEED_ADMIN_PASSWORD` — password for seeded admin (default in code: `123456`).
 - `SEED_ADMIN_NAME` — name for seeded admin (default: `Admin`).
 
@@ -143,7 +143,7 @@ node config/seedAdmin.js
 
 Defaults used by the script (if you don't set env vars):
 
-- Email: `karnik@yahoo.com`
+- Email: `admin@gmail.com`
 - Password: `123456`
 - Name: `Admin`
 
