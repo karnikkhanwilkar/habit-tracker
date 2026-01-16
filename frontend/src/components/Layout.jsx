@@ -1,12 +1,10 @@
 import React, { useState } from 'react';
-import { AppBar, Toolbar, Typography, Container, CssBaseline, Button, Dialog, DialogTitle, DialogContent, DialogActions } from '@mui/material';
-import { ThemeProvider } from '@mui/material/styles';
-import { getAppTheme } from '../theme';
+import { AppBar, Toolbar, Typography, Container, Button, Dialog, DialogTitle, DialogContent, DialogActions, Box } from '@mui/material';
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import { useAuth } from './AuthContext.jsx';
+import ThemeToggle from './ThemeToggle.jsx';
 
 const Layout = ({ children }) => {
-  const theme = getAppTheme();
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const [openConfirm, setOpenConfirm] = useState(false);
@@ -30,8 +28,7 @@ const Layout = ({ children }) => {
   };
 
   return (
-    <ThemeProvider theme={theme}>
-      <CssBaseline />
+    <>
       <AppBar position="static" color="primary">
         <Toolbar>
           <Typography
@@ -44,46 +41,62 @@ const Layout = ({ children }) => {
           >
             Habit Tracker
           </Typography>
-          {user ? (
-            <>
-              <Typography 
-                color="inherit" 
-                sx={{ mr: 2, cursor: 'pointer', '&:hover': { opacity: 0.8 } }}
-                onClick={handleUsernameClick}
-              >
-                Hi, {user.name}
-              </Typography>
-              <Button color="inherit" onClick={handleLogoutClick}>
-                LOGOUT
-              </Button>
-            </>
-          ) : (
-            <Button component={RouterLink} to="/login" color="inherit">
-              Login
-            </Button>
-          )}
+          
+          <Box display="flex" alignItems="center" gap={1}>
+            {/* 🌗 Theme Toggle */}
+            <ThemeToggle size="medium" />
+            
+            {user ? (
+              <>
+                <Typography 
+                  color="inherit" 
+                  sx={{ 
+                    cursor: 'pointer', 
+                    '&:hover': { textDecoration: 'underline' },
+                    mr: 2 
+                  }}
+                  onClick={handleUsernameClick}
+                >
+                  Welcome, {user.name}
+                </Typography>
+                <Button color="inherit" onClick={handleLogoutClick}>
+                  Logout
+                </Button>
+              </>
+            ) : (
+              <>
+                <Button color="inherit" component={RouterLink} to="/login">
+                  Login
+                </Button>
+                <Button color="inherit" component={RouterLink} to="/signup">
+                  Signup
+                </Button>
+              </>
+            )}
+          </Box>
         </Toolbar>
       </AppBar>
-      
+
+      <Container component="main" maxWidth="xl" sx={{ py: 2, minHeight: 'calc(100vh - 64px)' }}>
+        {children}
+      </Container>
+
+      {/* Logout Confirmation Dialog */}
       <Dialog open={openConfirm} onClose={handleCancelLogout}>
         <DialogTitle>Confirm Logout</DialogTitle>
         <DialogContent>
-          Are you sure you want to logout?
+          <Typography>Are you sure you want to logout?</Typography>
         </DialogContent>
         <DialogActions>
           <Button onClick={handleCancelLogout} color="primary">
             Cancel
           </Button>
-          <Button onClick={handleConfirmLogout} color="error" variant="contained">
+          <Button onClick={handleConfirmLogout} color="primary" variant="contained">
             Logout
           </Button>
         </DialogActions>
       </Dialog>
-
-      <Container maxWidth="lg" sx={{ my: 3 }}>
-        {children}
-      </Container>
-    </ThemeProvider>
+    </>
   );
 };
 

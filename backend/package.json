@@ -3,19 +3,29 @@
   "version": "1.0.0",
   "main": "server.js",
   "type": "commonjs",
+  "engines": {
+    "node": ">=18.0.0"
+  },
   "scripts": {
     "start": "node server.js",
-    "dev": "nodemon server.js"
+    "dev": "nodemon server.js",
+    "seed:admin": "node config/seedAdmin.js",
+    "build": "echo 'No build step required for Node.js backend'"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
     "express": "^4.19.2",
+    "express-rate-limit": "^8.2.1",
+    "express-slow-down": "^3.0.1",
     "express-validator": "^7.2.1",
+    "helmet": "^8.1.0",
     "jsonwebtoken": "^9.0.2",
     "mongodb": "^6.20.0",
-    "mongoose": "^8.5.1"
+    "mongoose": "^8.5.1",
+    "node-cron": "^4.2.1",
+    "nodemailer": "^7.0.12"
   },
   "devDependencies": {
     "nodemon": "^3.1.0"

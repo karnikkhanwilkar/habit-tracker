@@ -1,0 +1,14 @@
+# Railway Deployment Template
+# Automatically deploys when connected to GitHub
+
+[build]
+  builder = "nixpacks"
+
+[deploy]
+  numReplicas = 1
+  sleepApplication = false
+  restartPolicyType = "never"
+
+[env]
+  PORT = "5001"
+  NODE_ENV = "production"

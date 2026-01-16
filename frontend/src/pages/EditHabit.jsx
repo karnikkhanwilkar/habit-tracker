@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '../components/AuthContext.jsx';
-import { getHabits, updateHabit } from '../services/habitService';
-import { Container, Typography, TextField, Select, MenuItem, Button, Stack, Alert, Box, LinearProgress } from '@mui/material';
+import { getHabits, updateHabit, updateHabitReminder, testHabitReminder } from '../services/habitService';
+import { Container, Typography, TextField, Select, MenuItem, Button, Stack, Alert, Box, LinearProgress, Grid } from '@mui/material';
 import HabitTickBoxes from '../components/HabitTickBoxes.jsx';
+import ReminderSettings from '../components/ReminderSettings.jsx';
+import StreakBadge from '../components/StreakBadge.jsx';
 import { generateTickBoxes } from '../utils/tickBoxUtils';
 
 const EditHabit = () => {
@@ -32,11 +34,33 @@ const EditHabit = () => {
 	const save = async (e) => {
 		e.preventDefault();
 		try {
-			await updateHabit(id, { habitName: habit.habitName, frequency: habit.frequency }, token);
-			navigate('/dashboard');
+			const updated = await updateHabit(id, { habitName: habit.habitName, frequency: habit.frequency }, token);
+			setHabit(updated);
+			setError('');
 		} catch (err) {
 			setError('Failed to update habit');
 		}
+	};
+
+	const handleReminderUpdate = async (updatedHabit) => {
+		try {
+			const reminderData = {
+				reminderEnabled: updatedHabit.reminderEnabled,
+				reminderTime: updatedHabit.reminderTime,
+				reminderDays: updatedHabit.reminderDays,
+				reminderMessage: updatedHabit.reminderMessage
+			};
+			
+			await updateHabitReminder(id, reminderData, token);
+			setHabit(updatedHabit);
+			setError('');
+		} catch (err) {
+			setError('Failed to update reminder settings');
+		}
+	};
+
+	const handleTestReminder = async (habitId) => {
+		return await testHabitReminder(habitId, token);
 	};
 
 	const calculateCompletionPercentage = () => {
@@ -57,33 +81,54 @@ const EditHabit = () => {
 	const completionPercentage = calculateCompletionPercentage();
 
 	return (
-		<Container maxWidth="sm" sx={{ py: 4 }}>
-			<Typography variant="h5" gutterBottom>Edit Habit</Typography>
-			<Box component="form" onSubmit={save}>
-				<Stack spacing={2}>
-					<TextField name="habitName" label="Name" value={habit.habitName} onChange={handleChange} required fullWidth />
-					<Select name="frequency" value={habit.frequency} onChange={handleChange} fullWidth>
-						<MenuItem value="daily">Daily</MenuItem>
-						<MenuItem value="weekly">Weekly</MenuItem>
-						<MenuItem value="monthly">Monthly</MenuItem>
-						<MenuItem value="custom">Custom</MenuItem>
-					</Select>
-					
-					<Box sx={{ mt: 3 }}>
-						<Typography variant="h6" gutterBottom>Completion Progress</Typography>
-						<LinearProgress variant="determinate" value={completionPercentage} sx={{ mb: 1 }} />
-						<Typography variant="caption" color="text.secondary">{completionPercentage}% completed</Typography>
+		<Container maxWidth="md" sx={{ py: 4 }}>
+			<Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
+				<Typography variant="h5">Edit Habit</Typography>
+				<StreakBadge 
+					currentStreak={habit.currentStreak || 0}
+					longestStreak={habit.longestStreak || 0}
+					isStreakActive={(habit.currentStreak || 0) > 0}
+					size="medium"
+				/>
+			</Box>
+
+			<Grid container spacing={3}>
+				<Grid item xs={12} md={6}>
+					<Box component="form" onSubmit={save} sx={{ mb: 3 }}>
+						<Stack spacing={2}>
+							<TextField name="habitName" label="Name" value={habit.habitName} onChange={handleChange} required fullWidth />
+							<Select name="frequency" value={habit.frequency} onChange={handleChange} fullWidth>
+								<MenuItem value="daily">Daily</MenuItem>
+								<MenuItem value="weekly">Weekly</MenuItem>
+								<MenuItem value="monthly">Monthly</MenuItem>
+								<MenuItem value="custom">Custom</MenuItem>
+							</Select>
+							
+							<Box sx={{ mt: 3 }}>
+								<Typography variant="h6" gutterBottom>Completion Progress</Typography>
+								<LinearProgress variant="determinate" value={completionPercentage} sx={{ mb: 1 }} />
+								<Typography variant="caption" color="text.secondary">{completionPercentage}% completed</Typography>
+							</Box>
+
+							{error && <Alert severity="error">{error}</Alert>}
+							<Button type="submit" variant="contained">Save Changes</Button>
+						</Stack>
 					</Box>
 
-					<Box sx={{ mt: 2 }}>
-						<Typography variant="subtitle2" gutterBottom>Tick Boxes</Typography>
+					<Box sx={{ mt: 3 }}>
+						<Typography variant="subtitle2" gutterBottom>Completion History</Typography>
 						<HabitTickBoxes habit={habit} onUpdate={setHabit} />
 					</Box>
+				</Grid>
 
-					{error && <Alert severity="error">{error}</Alert>}
-					<Button type="submit" variant="contained">Save</Button>
-				</Stack>
-			</Box>
+				<Grid item xs={12} md={6}>
+					<ReminderSettings 
+						habit={habit}
+						onUpdate={handleReminderUpdate}
+						onTestReminder={handleTestReminder}
+					/>
+				</Grid>
+			</Grid>
 		</Container>
 	);
 };
