@@ -14,6 +14,7 @@ EMAIL_HOST=smtp.gmail.com
 EMAIL_PORT=587
 EMAIL_SECURE=false
 EMAIL_USER=karnikbgmi.gaming@gmail.com
+FRONTEND_URL=https://habit-tracker-taupe-eta.vercel.app
 ```
 
 ### Railway Deployment Steps:

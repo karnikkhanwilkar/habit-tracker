@@ -14,15 +14,33 @@ app.use(speedLimiter);
 
 // Standard Middleware
 app.use(cors({
-  origin: [
-    'http://localhost:3000', 
-    'http://localhost:3001', 
-    'http://localhost:5173',
-    'https://*.vercel.app',
-    'https://*.netlify.app',
-    'https://*.railway.app',
-    'https://*.render.com'
-  ],
+  origin: function (origin, callback) {
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) return callback(null, true);
+    
+    // Define allowed origins
+    const allowedOrigins = [
+      'http://localhost:3000', 
+      'http://localhost:3001', 
+      'http://localhost:5173',
+      'https://habit-tracker-taupe-eta.vercel.app', // Your specific Vercel domain
+      process.env.FRONTEND_URL, // Environment variable for production frontend
+    ];
+    
+    // Check if origin is allowed or matches vercel/netlify/railway/render patterns
+    const isAllowed = allowedOrigins.includes(origin) ||
+      /^https:\/\/.*\.vercel\.app$/.test(origin) ||
+      /^https:\/\/.*\.netlify\.app$/.test(origin) ||
+      /^https:\/\/.*\.railway\.app$/.test(origin) ||
+      /^https:\/\/.*\.render\.com$/.test(origin);
+    
+    if (isAllowed) {
+      callback(null, true);
+    } else {
+      console.log('CORS blocked origin:', origin);
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
