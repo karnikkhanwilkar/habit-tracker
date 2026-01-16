@@ -15,8 +15,13 @@ app.use(speedLimiter);
 // Standard Middleware
 app.use(cors({
   origin: function (origin, callback) {
+    console.log('🔍 Checking CORS for origin:', origin);
+    
     // Allow requests with no origin (like mobile apps or curl requests)
-    if (!origin) return callback(null, true);
+    if (!origin) {
+      console.log('✅ Allowing request with no origin');
+      return callback(null, true);
+    }
     
     // Define allowed origins
     const allowedOrigins = [
@@ -27,7 +32,7 @@ app.use(cors({
       process.env.FRONTEND_URL, // Environment variable for production frontend
     ];
     
-    // Check if origin is allowed or matches vercel/netlify/railway/render patterns
+    // Check if origin is allowed or matches hosting patterns
     const isAllowed = allowedOrigins.includes(origin) ||
       /^https:\/\/.*\.vercel\.app$/.test(origin) ||
       /^https:\/\/.*\.netlify\.app$/.test(origin) ||
@@ -35,16 +40,40 @@ app.use(cors({
       /^https:\/\/.*\.render\.com$/.test(origin);
     
     if (isAllowed) {
+      console.log('✅ CORS allowed for origin:', origin);
       callback(null, true);
     } else {
-      console.log('CORS blocked origin:', origin);
+      console.log('❌ CORS blocked origin:', origin);
       callback(new Error('Not allowed by CORS'));
     }
   },
   credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization']
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'HEAD', 'PATCH'],
+  allowedHeaders: [
+    'Content-Type', 
+    'Authorization',
+    'X-Requested-With',
+    'Accept',
+    'Origin',
+    'Cache-Control',
+    'X-File-Name'
+  ],
+  exposedHeaders: ['Set-Cookie'],
+  preflightContinue: false,
+  optionsSuccessStatus: 204
 }));
+
+// Add explicit preflight handler
+app.options('*', cors());
+
+// Request logging middleware for debugging
+app.use((req, res, next) => {
+  console.log(`📋 ${new Date().toISOString()} - ${req.method} ${req.url}`);
+  console.log(`🌐 Origin: ${req.headers.origin || 'None'}`);
+  console.log(`🔑 User-Agent: ${req.headers['user-agent']?.substring(0, 50)}...`);
+  next();
+});
+
 app.use(express.json());
 
 // DB

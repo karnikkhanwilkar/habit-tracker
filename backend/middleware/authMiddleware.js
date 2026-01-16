@@ -1,6 +1,11 @@
 const jwt = require('jsonwebtoken');
 
 const auth = (req, res, next) => {
+  // Skip authentication for OPTIONS requests (CORS preflight)
+  if (req.method === 'OPTIONS') {
+    return next();
+  }
+
   const authHeader = req.headers.authorization;
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
     return res.status(401).json({ message: 'Not authorized, no token' });
@@ -11,6 +16,7 @@ const auth = (req, res, next) => {
     req.user = { id: decoded.id };
     next();
   } catch (err) {
+    console.log('❌ Auth middleware - token verification failed:', err.message);
     return res.status(401).json({ message: 'Not authorized, token failed' });
   }
 };

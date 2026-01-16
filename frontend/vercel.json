@@ -9,6 +9,9 @@
       }
     }
   ],
+  "env": {
+    "VITE_API_URL": "https://habit-tracker-entj.onrender.com/api"
+  },
   "routes": [
     {
       "handle": "filesystem"
@@ -18,4 +21,5 @@
       "dest": "/index.html"
     }
   ]
+}
 }
