@@ -6,15 +6,15 @@
 ```
 PORT=5001
 NODE_ENV=production
-MONGO_URI=mongodb+srv://karnikkhanwilkar:karnik2712@habittracker.r9lpf1p.mongodb.net/?appName=habitTracker
+MONGO_URI=your_mongodb_url
 JWT_SECRET=your-super-secure-jwt-secret-here
-GMAIL_USER=karnikbgmi.gaming@gmail.com
-GMAIL_APP_PASSWORD=vhdwxkbocjgabqov
+GMAIL_USER=your-email-address
+GMAIL_APP_PASSWORD=
 EMAIL_HOST=smtp.gmail.com
 EMAIL_PORT=587
 EMAIL_SECURE=false
-EMAIL_USER=karnikbgmi.gaming@gmail.com
-FRONTEND_URL=https://habit-tracker-taupe-eta.vercel.app
+EMAIL_USER=your-email-address
+FRONTEND_URL=your-frontend-url
 ```
 
 ### Railway Deployment Steps:
