@@ -280,12 +280,13 @@ class HabitService {
    * Test sending reminder for habit
    * @param {string} habitId - Habit ID
    * @param {string} userId - User ID
+   * @param {string} customMessage - Optional custom message for test
    * @returns {Promise<void>}
    */
-  async testHabitReminder(habitId, userId) {
+  async testHabitReminder(habitId, userId, customMessage) {
     try {
       const habit = await this.getHabitById(habitId, userId);
-      await reminderService.testSendReminder(habit._id.toString());
+      await reminderService.testSendReminder(habit._id.toString(), customMessage);
     } catch (error) {
       throw new Error(`Failed to send test reminder: ${error.message}`);
     }

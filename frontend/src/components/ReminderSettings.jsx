@@ -14,7 +14,8 @@ import {
   Collapse,
   Divider,
   IconButton,
-  Tooltip
+  Tooltip,
+  CircularProgress
 } from '@mui/material';
 import NotificationsIcon from '@mui/icons-material/Notifications';
 import SendIcon from '@mui/icons-material/Send';
@@ -103,7 +104,7 @@ const ReminderSettings = ({
     setTestResult(null);
 
     try {
-      await onTestReminder(habit._id);
+      await onTestReminder(habit._id, localReminderMessage);
       setTestResult({ success: true, message: 'Test reminder sent successfully!' });
     } catch (error) {
       setTestResult({ success: false, message: 'Failed to send test reminder.' });
@@ -217,14 +218,21 @@ const ReminderSettings = ({
                 <Typography variant="body2" color="textSecondary">
                   Test your reminder settings
                 </Typography>
-                <Tooltip title="Send a test reminder email now">
+                <Tooltip title={localReminderMessage ? 
+                  `Send a test reminder email now with your custom message: "${localReminderMessage}"` :
+                  "Send a test reminder email now"
+                }>
                   <IconButton
                     onClick={handleTestReminder}
                     disabled={testLoading}
                     color="primary"
                     size="small"
                   >
-                    <SendIcon />
+                    {testLoading ? (
+                      <CircularProgress size={20} color="primary" />
+                    ) : (
+                      <SendIcon />
+                    )}
                   </IconButton>
                 </Tooltip>
               </Box>

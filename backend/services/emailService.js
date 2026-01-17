@@ -56,9 +56,10 @@ const createTransporter = () => {
  * Generate reminder email template
  * @param {Object} habit - Habit object
  * @param {Object} user - User object
+ * @param {boolean} isTest - Whether this is a test email
  * @returns {Object} Email template
  */
-const generateReminderTemplate = (habit, user) => {
+const generateReminderTemplate = (habit, user, isTest = false) => {
   const currentStreak = habit.currentStreak || 0;
   const streakText = currentStreak > 0 ? 
     `🔥 You're on a ${currentStreak} day streak! Don't break it now!` : 
@@ -66,7 +67,9 @@ const generateReminderTemplate = (habit, user) => {
 
   const customMessage = habit.reminderMessage || '';
   
-  const subject = `⏰ Time for your ${habit.habitName} habit!`;
+  const subject = isTest ? 
+    `🧪 TEST: ⏰ Time for your ${habit.habitName} habit!` :
+    `⏰ Time for your ${habit.habitName} habit!`;
   
   const htmlContent = `
     <!DOCTYPE html>
@@ -135,8 +138,8 @@ const generateReminderTemplate = (habit, user) => {
     <body>
       <div class="container">
         <div class="header">
-          <h1 class="habit-name">⏰ ${habit.habitName}</h1>
-          <p style="margin: 5px 0 0 0;">It's time to build your habit!</p>
+          <h1 class="habit-name">${isTest ? '🧪 TEST: ' : ''}⏰ ${habit.habitName}</h1>
+          <p style="margin: 5px 0 0 0;">It's time to build your habit!${isTest ? ' (Test Email)' : ''}</p>
         </div>
         
         <div class="streak-info">
@@ -169,13 +172,13 @@ const generateReminderTemplate = (habit, user) => {
   `;
 
   const textContent = `
-    ⏰ ${habit.habitName} Reminder
+    ${isTest ? '🧪 TEST: ' : ''}⏰ ${habit.habitName} Reminder
     
     Hello ${user.name}!
     
     ${streakText}
     
-    This is your reminder to complete your ${habit.habitName} habit.
+    This is your reminder to complete your ${habit.habitName} habit.${isTest ? ' (This is a test email)' : ''}
     ${customMessage ? `\n"${customMessage}"\n` : ''}
     
     Visit your dashboard to mark it as complete: ${process.env.FRONTEND_URL || 'http://localhost:5173'}/dashboard
@@ -195,12 +198,13 @@ const generateReminderTemplate = (habit, user) => {
  * Send reminder email
  * @param {Object} habit - Habit object
  * @param {Object} user - User object
+ * @param {boolean} isTest - Whether this is a test email
  * @returns {Promise<Object>} Send result
  */
-const sendReminderEmail = async (habit, user) => {
+const sendReminderEmail = async (habit, user, isTest = false) => {
   try {
     const transporter = createTransporter();
-    const template = generateReminderTemplate(habit, user);
+    const template = generateReminderTemplate(habit, user, isTest);
 
     const mailOptions = {
       from: `"Habit Tracker" <${process.env.EMAIL_FROM || 'noreply@habittracker.com'}>`,

@@ -61,8 +61,8 @@ const EditHabit = () => {
 		}
 	};
 
-	const handleTestReminder = async (habitId) => {
-		return await testHabitReminder(habitId, token);
+	const handleTestReminder = async (habitId, customMessage) => {
+		return await testHabitReminder(habitId, token, customMessage);
 	};
 
 	const calculateCompletionPercentage = () => {

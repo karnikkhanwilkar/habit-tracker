@@ -63,6 +63,9 @@ router.put('/:id/reminder', [
 ], updateHabitReminder);
 
 // ⏰ Test sending a reminder email
-router.post('/:id/reminder/test', reminderTestLimiter, [param('id').isMongoId().withMessage('Invalid habit id')], testHabitReminder);
+router.post('/:id/reminder/test', reminderTestLimiter, [
+  param('id').isMongoId().withMessage('Invalid habit id'),
+  body('customMessage').optional().isString().withMessage('customMessage must be a string')
+], testHabitReminder);
 
 module.exports = router;

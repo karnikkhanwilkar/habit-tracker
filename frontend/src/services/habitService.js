@@ -55,7 +55,8 @@ export const updateHabitReminder = async (habitId, reminderData, token) => {
 };
 
 // ⏰ Test sending a reminder email
-export const testHabitReminder = async (habitId, token) => {
-  const res = await apiClient.post(`/habits/${habitId}/reminder/test`, {}, getAuthHeader(token));
+export const testHabitReminder = async (habitId, token, customMessage) => {
+  const payload = customMessage !== undefined ? { customMessage } : {};
+  const res = await apiClient.post(`/habits/${habitId}/reminder/test`, payload, getAuthHeader(token));
   return res.data;
 };

@@ -113,7 +113,8 @@ exports.updateHabitReminder = catchAsync(async (req, res, next) => {
 });
 
 exports.testHabitReminder = catchAsync(async (req, res, next) => {
-  await habitService.testHabitReminder(req.params.id, req.user.id);
+  const { customMessage } = req.body;
+  await habitService.testHabitReminder(req.params.id, req.user.id, customMessage);
 
   res.status(200).json({
     status: 'success',

@@ -214,9 +214,45 @@ const getActiveReminderJobs = () => {
 /**
  * Test sending a reminder immediately (for testing)
  * @param {string} habitId - Habit ID
+ * @param {string} customMessage - Optional custom message for test
  */
-const testSendReminder = async (habitId) => {
-  return await sendHabitReminder(habitId);
+const testSendReminder = async (habitId, customMessage) => {
+  try {
+    const habit = await Habit.findById(habitId).populate('userId');
+    
+    if (!habit) {
+      throw new Error('Habit not found');
+    }
+
+    const user = await User.findById(habit.userId);
+    if (!user) {
+      throw new Error('User not found');
+    }
+
+    // Create temporary habit with custom message if provided
+    let testHabit = habit;
+    if (customMessage !== undefined && customMessage !== null) {
+      testHabit = {
+        ...habit.toObject(),
+        reminderMessage: customMessage
+      };
+    }
+
+    console.log(`Sending TEST reminder for habit: ${testHabit.habitName} to ${user.email}`);
+    const result = await emailService.sendReminderEmail(testHabit, user, true);
+
+    if (result.success) {
+      console.log(`✅ Test reminder sent successfully for habit: ${testHabit.habitName}`);
+    } else {
+      console.error(`❌ Failed to send test reminder for habit: ${testHabit.habitName}`, result.error);
+      throw new Error(result.error || 'Failed to send test email');
+    }
+
+    return result;
+  } catch (error) {
+    console.error(`Error sending test reminder for habit ${habitId}:`, error);
+    throw error;
+  }
 };
 
 module.exports = {
