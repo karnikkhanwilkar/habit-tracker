@@ -7,6 +7,83 @@ const Habit = require('../models/Habit');
 const { catchAsync, AppError } = require('../middleware/errorHandler');
 const { getDbStats, analyzeQueryPerformance } = require('../config/dbOptimization');
 const logger = require('../utils/logger');
+const emailService = require('../services/emailService');
+const reminderService = require('../services/reminderService');
+
+// Test email configuration and sending
+router.post('/test-email', authMiddleware, adminMiddleware, catchAsync(async (req, res, next) => {
+  try {
+    // Test email configuration
+    const configTest = await emailService.testEmailConfig();
+    
+    if (!configTest.success) {
+      return res.status(400).json({
+        status: 'error',
+        message: 'Email configuration test failed',
+        error: configTest.message
+      });
+    }
+
+    // Send test email to admin user
+    const testEmail = {
+      _id: 'test-habit-id',
+      habitName: 'Test Habit',
+      frequency: 'daily',
+      currentStreak: 5,
+      reminderMessage: 'This is a test email from your Habit Tracker system.'
+    };
+
+    const testUser = {
+      name: 'Admin Test',
+      email: req.user.email // Send to the admin who requested the test
+    };
+
+    const result = await emailService.sendReminderEmail(testEmail, testUser);
+    
+    if (result.success) {
+      res.status(200).json({
+        status: 'success',
+        message: 'Test email sent successfully',
+        data: {
+          configTest,
+          emailResult: result,
+          sentTo: testUser.email
+        }
+      });
+    } else {
+      res.status(400).json({
+        status: 'error',
+        message: 'Failed to send test email',
+        error: result.error
+      });
+    }
+  } catch (error) {
+    logger.error('Email test error:', error);
+    res.status(500).json({
+      status: 'error',
+      message: 'Email test failed',
+      error: error.message
+    });
+  }
+}));
+
+// Test reminder for a specific habit
+router.post('/test-reminder/:habitId', authMiddleware, adminMiddleware, catchAsync(async (req, res, next) => {
+  try {
+    await reminderService.testSendReminder(req.params.habitId);
+    res.status(200).json({
+      status: 'success',
+      message: 'Test reminder sent successfully'
+    });
+  } catch (error) {
+    logger.error('Reminder test error:', error);
+    res.status(500).json({
+      status: 'error',
+      message: 'Failed to send test reminder',
+      error: error.message
+    });
+  }
+}));
 
 // Get all users and their habits
 router.get('/users', authMiddleware, adminMiddleware, catchAsync(async (req, res, next) => {

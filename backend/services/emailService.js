@@ -11,19 +11,24 @@ const nodemailer = require('nodemailer');
 const createTransporter = () => {
   // Gmail configuration (primary)
   if (process.env.GMAIL_USER && process.env.GMAIL_APP_PASSWORD) {
-    return nodemailer.createTransporter({
+    console.log(`🔧 Creating Gmail transporter for: ${process.env.GMAIL_USER}`);
+    return nodemailer.createTransport({
       service: 'gmail', // Use Gmail service
-      secure: true,
+      secure: false, // Set to false for port 587
+      port: 587,
       auth: {
         user: process.env.GMAIL_USER, // Your Gmail address
         pass: process.env.GMAIL_APP_PASSWORD // Gmail App Password (not regular password)
+      },
+      tls: {
+        rejectUnauthorized: false // Allow self-signed certificates
       }
     });
   }
 
   // Alternative SMTP configuration (fallback)
   if (process.env.EMAIL_HOST && process.env.EMAIL_USER && process.env.EMAIL_PASS) {
-    return nodemailer.createTransporter({
+    return nodemailer.createTransport({
       host: process.env.EMAIL_HOST,
       port: parseInt(process.env.EMAIL_PORT) || 587,
       secure: process.env.EMAIL_SECURE === 'true', // true for 465, false for other ports
@@ -36,7 +41,7 @@ const createTransporter = () => {
 
   // Development/Testing fallback - Ethereal Email
   console.log('⚠️  Using Ethereal email for testing. Configure Gmail in .env for production.');
-  return nodemailer.createTransporter({
+  return nodemailer.createTransport({
     host: 'smtp.ethereal.email',
     port: 587,
     secure: false,
@@ -206,7 +211,7 @@ const sendReminderEmail = async (habit, user) => {
     };
 
     // For development/testing, log the email instead of sending
-    if (process.env.NODE_ENV === 'development' && !process.env.EMAIL_HOST) {
+    if (process.env.NODE_ENV === 'development' && !process.env.GMAIL_USER && !process.env.EMAIL_HOST) {
       console.log('\n📧 REMINDER EMAIL (Development Mode):');
       console.log('To:', user.email);
       console.log('Subject:', template.subject);
@@ -219,6 +224,10 @@ const sendReminderEmail = async (habit, user) => {
         info: 'Email logged to console (development mode)'
       };
     }
+
+    // Log email attempt
+    console.log(`📧 Attempting to send email to: ${user.email}`);
+    console.log(`📧 Using transporter: ${process.env.GMAIL_USER ? 'Gmail' : process.env.EMAIL_HOST ? 'SMTP' : 'Ethereal'}`);
 
     const info = await transporter.sendMail(mailOptions);
     
