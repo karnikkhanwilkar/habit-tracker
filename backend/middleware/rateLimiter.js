@@ -11,12 +11,20 @@ const slowDown = require('express-slow-down');
  */
 const generalLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // Limit each IP to 100 requests per windowMs
+  max: 300, // Limit each IP to 300 requests per windowMs
   skip: (req) => {
-    // Allow reminder settings updates to avoid 429 during editing/saving
-    if (req.method === 'PUT' && /^\/habits\/[a-f\d]{24}\/reminder$/.test(req.path)) {
+    // Skip preflight requests
+    if (req.method === 'OPTIONS') {
       return true;
     }
+
+    // Allow reminder settings updates to avoid 429 during editing/saving
+    const reminderPath = /^\/(v1\/)?habits\/[a-f\d]{24}\/reminder$/.test(req.path);
+    const reminderTestPath = /^\/(v1\/)?habits\/[a-f\d]{24}\/reminder\/test$/.test(req.path);
+    if (reminderPath || reminderTestPath) {
+      return true;
+    }
+
     return false;
   },
   message: {
