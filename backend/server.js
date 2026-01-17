@@ -7,6 +7,9 @@ const { generalLimiter, authLimiter, speedLimiter } = require('./middleware/rate
 
 const app = express();
 
+// Trust proxy headers (Render/hosted environments)
+app.set('trust proxy', 1);
+
 // Standard Middleware
 app.use(cors({
   origin: function (origin, callback) {
