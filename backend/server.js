@@ -7,11 +7,6 @@ const { generalLimiter, authLimiter, speedLimiter } = require('./middleware/rate
 
 const app = express();
 
-// � Rate Limiting
-app.use('/api/auth', authLimiter);
-app.use('/api', generalLimiter);
-app.use(speedLimiter);
-
 // Standard Middleware
 app.use(cors({
   origin: function (origin, callback) {
@@ -65,6 +60,11 @@ app.use(cors({
 
 // Add explicit preflight handler
 app.options('*', cors());
+
+// � Rate Limiting
+app.use('/api/auth', authLimiter);
+app.use('/api', generalLimiter);
+app.use(speedLimiter);
 
 // Request logging middleware for debugging
 app.use((req, res, next) => {

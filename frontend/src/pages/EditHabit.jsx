@@ -51,11 +51,13 @@ const EditHabit = () => {
 				reminderMessage: updatedHabit.reminderMessage
 			};
 			
-			await updateHabitReminder(id, reminderData, token);
+			const updated = await updateHabitReminder(id, reminderData, token);
 			setHabit(updatedHabit);
 			setError('');
+			return updated;
 		} catch (err) {
 			setError('Failed to update reminder settings');
+			throw err;
 		}
 	};
 

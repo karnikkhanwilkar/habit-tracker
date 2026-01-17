@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Box,
   Card,
@@ -32,6 +32,19 @@ const ReminderSettings = ({
 }) => {
   const [testLoading, setTestLoading] = useState(false);
   const [testResult, setTestResult] = useState(null);
+  const [saveLoading, setSaveLoading] = useState(false);
+  const [saveResult, setSaveResult] = useState(null);
+  const [localReminderEnabled, setLocalReminderEnabled] = useState(false);
+  const [localReminderTime, setLocalReminderTime] = useState('');
+  const [localReminderDays, setLocalReminderDays] = useState([]);
+  const [localReminderMessage, setLocalReminderMessage] = useState('');
+
+  useEffect(() => {
+    setLocalReminderEnabled(!!habit.reminderEnabled);
+    setLocalReminderTime(habit.reminderTime || '');
+    setLocalReminderDays(habit.reminderDays || []);
+    setLocalReminderMessage(habit.reminderMessage || '');
+  }, [habit]);
 
   const weekDays = [
     { id: 0, short: 'Sun', full: 'Sunday' },
@@ -44,36 +57,45 @@ const ReminderSettings = ({
   ];
 
   const handleReminderToggle = (enabled) => {
-    onUpdate({
-      ...habit,
-      reminderEnabled: enabled
-    });
+    setLocalReminderEnabled(enabled);
   };
 
   const handleTimeChange = (time) => {
-    onUpdate({
-      ...habit,
-      reminderTime: time
-    });
+    setLocalReminderTime(time);
   };
 
   const handleDayToggle = (dayId) => {
-    const reminderDays = habit.reminderDays || [];
-    const updatedDays = reminderDays.includes(dayId)
-      ? reminderDays.filter(d => d !== dayId)
-      : [...reminderDays, dayId];
+    const updatedDays = localReminderDays.includes(dayId)
+      ? localReminderDays.filter(d => d !== dayId)
+      : [...localReminderDays, dayId];
 
-    onUpdate({
-      ...habit,
-      reminderDays: updatedDays
-    });
+    setLocalReminderDays(updatedDays);
   };
 
   const handleMessageChange = (message) => {
-    onUpdate({
-      ...habit,
-      reminderMessage: message
-    });
+    setLocalReminderMessage(message);
+  };
+
+  const handleSaveReminderSettings = async () => {
+    setSaveLoading(true);
+    setSaveResult(null);
+
+    try {
+      await onUpdate({
+        ...habit,
+        reminderEnabled: localReminderEnabled,
+        reminderTime: localReminderTime,
+        reminderDays: localReminderDays,
+        reminderMessage: localReminderMessage
+      });
+      setSaveResult({ success: true, message: 'Reminder settings saved.' });
+    } catch (error) {
+      setSaveResult({ success: false, message: 'Failed to save reminder settings.' });
+    } finally {
+      setSaveLoading(false);
+    }
+
+    setTimeout(() => setSaveResult(null), 5000);
   };
 
   const handleTestReminder = async () => {
@@ -104,7 +126,7 @@ const ReminderSettings = ({
         <FormControlLabel
           control={
             <Switch
-              checked={habit.reminderEnabled || false}
+              checked={localReminderEnabled}
               onChange={(e) => handleReminderToggle(e.target.checked)}
               color="primary"
             />
@@ -113,7 +135,7 @@ const ReminderSettings = ({
           sx={{ mb: 2 }}
         />
 
-        <Collapse in={habit.reminderEnabled}>
+        <Collapse in={localReminderEnabled}>
           <Box>
             <Divider sx={{ mb: 3 }} />
             
@@ -125,7 +147,7 @@ const ReminderSettings = ({
               </Box>
               <TextField
                 type="time"
-                value={habit.reminderTime || '09:00'}
+                value={localReminderTime || '09:00'}
                 onChange={(e) => handleTimeChange(e.target.value)}
                 InputLabelProps={{ shrink: true }}
                 fullWidth
@@ -148,8 +170,8 @@ const ReminderSettings = ({
                     <Chip
                       label={day.short}
                       onClick={() => handleDayToggle(day.id)}
-                      color={(habit.reminderDays || []).includes(day.id) ? 'primary' : 'default'}
-                      variant={(habit.reminderDays || []).includes(day.id) ? 'filled' : 'outlined'}
+                      color={localReminderDays.includes(day.id) ? 'primary' : 'default'}
+                      variant={localReminderDays.includes(day.id) ? 'filled' : 'outlined'}
                       clickable
                       size="small"
                     />
@@ -157,8 +179,8 @@ const ReminderSettings = ({
                 ))}
               </Grid>
               <Typography variant="caption" color="textSecondary" display="block" mt={1}>
-                {habit.reminderDays?.length > 0 
-                  ? `Reminders will be sent on: ${habit.reminderDays.map(d => weekDays[d].full).join(', ')}`
+                {localReminderDays.length > 0 
+                  ? `Reminders will be sent on: ${localReminderDays.map(d => weekDays[d].full).join(', ')}`
                   : 'Select which days to receive reminders (leave empty for daily)'
                 }
               </Typography>
@@ -172,7 +194,7 @@ const ReminderSettings = ({
               <TextField
                 multiline
                 rows={3}
-                value={habit.reminderMessage || ''}
+                value={localReminderMessage}
                 onChange={(e) => handleMessageChange(e.target.value)}
                 placeholder="Add a personal motivational message to your reminders..."
                 fullWidth
@@ -183,22 +205,40 @@ const ReminderSettings = ({
               </Typography>
             </Box>
 
-            {/* Test Reminder */}
-            <Box display="flex" justifyContent="space-between" alignItems="center">
-              <Typography variant="body2" color="textSecondary">
-                Test your reminder settings
-              </Typography>
-              <Tooltip title="Send a test reminder email now">
-                <IconButton
-                  onClick={handleTestReminder}
-                  disabled={testLoading}
-                  color="primary"
-                  size="small"
-                >
-                  <SendIcon />
-                </IconButton>
-              </Tooltip>
+            <Box display="flex" gap={2} alignItems="center" mb={2}>
+              <Button
+                variant="contained"
+                onClick={handleSaveReminderSettings}
+                disabled={saveLoading}
+              >
+                {saveLoading ? 'Saving...' : 'Save Reminder Settings'}
+              </Button>
+              <Box display="flex" alignItems="center" gap={1}>
+                <Typography variant="body2" color="textSecondary">
+                  Test your reminder settings
+                </Typography>
+                <Tooltip title="Send a test reminder email now">
+                  <IconButton
+                    onClick={handleTestReminder}
+                    disabled={testLoading}
+                    color="primary"
+                    size="small"
+                  >
+                    <SendIcon />
+                  </IconButton>
+                </Tooltip>
+              </Box>
             </Box>
+
+            {saveResult && (
+              <Alert 
+                severity={saveResult.success ? 'success' : 'error'} 
+                sx={{ mb: 2 }}
+                onClose={() => setSaveResult(null)}
+              >
+                {saveResult.message}
+              </Alert>
+            )}
 
             {testResult && (
               <Alert 
@@ -211,7 +251,7 @@ const ReminderSettings = ({
             )}
 
             {/* Reminder Preview */}
-            {habit.reminderEnabled && (
+            {localReminderEnabled && (
               <Card variant="outlined" sx={{ mt: 3, bgcolor: 'grey.50' }}>
                 <CardContent sx={{ py: 2 }}>
                   <Typography variant="caption" color="primary" fontWeight="bold">
@@ -221,15 +261,15 @@ const ReminderSettings = ({
                     <strong>Subject:</strong> ⏰ Time for your {habit.habitName} habit!
                   </Typography>
                   <Typography variant="body2" sx={{ mt: 1 }}>
-                    <strong>Schedule:</strong> {habit.reminderTime || '09:00'} {
-                      habit.reminderDays?.length > 0 
-                        ? `on ${habit.reminderDays.map(d => weekDays[d].short).join(', ')}`
+                    <strong>Schedule:</strong> {localReminderTime || '09:00'} {
+                      localReminderDays.length > 0 
+                        ? `on ${localReminderDays.map(d => weekDays[d].short).join(', ')}`
                         : 'daily'
                     }
                   </Typography>
-                  {habit.reminderMessage && (
+                  {localReminderMessage && (
                     <Typography variant="body2" sx={{ mt: 1 }}>
-                      <strong>Custom message:</strong> "{habit.reminderMessage}"
+                      <strong>Custom message:</strong> "{localReminderMessage}"
                     </Typography>
                   )}
                 </CardContent>
