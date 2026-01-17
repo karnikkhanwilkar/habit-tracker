@@ -11,17 +11,28 @@ import StyledCheckbox from './StyledCheckbox.jsx';
  * Displays interactive tick boxes for habit completion tracking
  * Based on frequency: daily (30 days), weekly (12 weeks), or monthly (12 months)
  */
-const HabitTickBoxes = ({ habit, onUpdate }) => {
+const HabitTickBoxes = ({ habit, onUpdate, rangeFromCreated = false, futureDays = 7 }) => {
   const { token } = useAuth();
   const [tickBoxes, setTickBoxes] = useState([]);
   const [loading, setLoading] = useState({});
   const [error, setError] = useState('');
 
   // Generate tick boxes when habit loads or frequency changes
+  const buildOptions = () => {
+    if (!rangeFromCreated) return undefined;
+    const endDate = new Date();
+    endDate.setDate(endDate.getDate() + futureDays);
+    return {
+      startDate: habit.createdAt,
+      endDate
+    };
+  };
+
   useEffect(() => {
-    const boxes = generateTickBoxes(habit.frequency, habit.completions || []);
+    const options = buildOptions();
+    const boxes = generateTickBoxes(habit.frequency, habit.completions || [], options || undefined);
     setTickBoxes(boxes);
-  }, [habit._id, habit.frequency, habit.completions]);
+  }, [habit._id, habit.frequency, habit.completions, habit.createdAt, rangeFromCreated, futureDays]);
 
   const handleCheckboxChange = async (tickBox, index) => {
     // Don't allow changes to locked (future) or missed (past uncompleted) tick boxes
@@ -41,7 +52,8 @@ const HabitTickBoxes = ({ habit, onUpdate }) => {
       );
 
       // Update local state with new completion data
-      const newTickBoxes = generateTickBoxes(habit.frequency, updatedHabit.completions || []);
+      const options = buildOptions();
+      const newTickBoxes = generateTickBoxes(habit.frequency, updatedHabit.completions || [], options || undefined);
       setTickBoxes(newTickBoxes);
 
       // Notify parent component of update

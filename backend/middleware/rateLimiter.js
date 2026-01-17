@@ -12,6 +12,13 @@ const slowDown = require('express-slow-down');
 const generalLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
   max: 100, // Limit each IP to 100 requests per windowMs
+  skip: (req) => {
+    // Allow reminder settings updates to avoid 429 during editing/saving
+    if (req.method === 'PUT' && /^\/habits\/[a-f\d]{24}\/reminder$/.test(req.path)) {
+      return true;
+    }
+    return false;
+  },
   message: {
     status: 'error',
     message: 'Too many requests from this IP, please try again later.'

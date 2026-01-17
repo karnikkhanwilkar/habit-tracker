@@ -67,14 +67,18 @@ export const formatMonthName = (date) => {
  * Generate tick boxes for daily frequency
  * Returns array of completion objects for current day + next 29 days
  */
-export const generateDailyTickBoxes = (existingCompletions = []) => {
+export const generateDailyTickBoxes = (existingCompletions = [], options = {}) => {
   const tickBoxes = [];
   const today = getTodayDate();
+  const startDate = options.startDate ? new Date(options.startDate) : today;
+  startDate.setHours(0, 0, 0, 0);
+  const endDate = options.endDate
+    ? new Date(options.endDate)
+    : new Date(today.getTime() + (options.futureDays ?? 29) * 86400000);
+  endDate.setHours(0, 0, 0, 0);
 
-  // Generate 30 days worth of tick boxes (current day + 29 days ahead)
-  for (let i = 0; i < 30; i++) {
-    const date = new Date(today);
-    date.setDate(date.getDate() + i);
+  // Generate tick boxes from start date to end date (inclusive)
+  for (let date = new Date(startDate); date <= endDate; date.setDate(date.getDate() + 1)) {
 
     const dateStr = formatDateShort(date);
     const dayName = date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
@@ -104,15 +108,17 @@ export const generateDailyTickBoxes = (existingCompletions = []) => {
  * Generate tick boxes for weekly frequency
  * Returns array of completion objects for current week + next 11 weeks
  */
-export const generateWeeklyTickBoxes = (existingCompletions = []) => {
+export const generateWeeklyTickBoxes = (existingCompletions = [], options = {}) => {
   const tickBoxes = [];
-  const weekStart = getWeekStart();
   const today = getTodayDate();
+  const startDate = options.startDate ? getWeekStart(new Date(options.startDate)) : getWeekStart();
+  const endDate = options.endDate
+    ? getWeekStart(new Date(options.endDate))
+    : new Date(getWeekStart().getTime() + (options.futureWeeks ?? 11) * 7 * 86400000);
+  endDate.setHours(0, 0, 0, 0);
 
-  // Generate 12 weeks worth of tick boxes
-  for (let i = 0; i < 12; i++) {
-    const date = new Date(weekStart);
-    date.setDate(date.getDate() + i * 7);
+  // Generate weekly tick boxes from start to end (inclusive)
+  for (let date = new Date(startDate); date <= endDate; date.setDate(date.getDate() + 7)) {
 
     const weekNum = getWeekNumber(date);
     const year = date.getFullYear();
@@ -144,15 +150,17 @@ export const generateWeeklyTickBoxes = (existingCompletions = []) => {
  * Generate tick boxes for monthly frequency
  * Returns array of completion objects for current month + next 11 months
  */
-export const generateMonthlyTickBoxes = (existingCompletions = []) => {
+export const generateMonthlyTickBoxes = (existingCompletions = [], options = {}) => {
   const tickBoxes = [];
-  const monthStart = getMonthStart();
   const today = getTodayDate();
+  const startDate = options.startDate ? getMonthStart(new Date(options.startDate)) : getMonthStart();
+  const endDate = options.endDate
+    ? getMonthStart(new Date(options.endDate))
+    : new Date(getMonthStart().getFullYear(), getMonthStart().getMonth() + (options.futureMonths ?? 11), 1);
+  endDate.setHours(0, 0, 0, 0);
 
-  // Generate 12 months worth of tick boxes
-  for (let i = 0; i < 12; i++) {
-    const date = new Date(monthStart);
-    date.setMonth(date.getMonth() + i);
+  // Generate monthly tick boxes from start to end (inclusive)
+  for (let date = new Date(startDate); date <= endDate; date.setMonth(date.getMonth() + 1)) {
 
     const label = formatMonthName(date);
     const dateStr = formatDateShort(date);
@@ -180,14 +188,14 @@ export const generateMonthlyTickBoxes = (existingCompletions = []) => {
 /**
  * Generate tick boxes based on frequency
  */
-export const generateTickBoxes = (frequency, existingCompletions = []) => {
+export const generateTickBoxes = (frequency, existingCompletions = [], options = {}) => {
   switch (frequency) {
     case 'daily':
-      return generateDailyTickBoxes(existingCompletions);
+      return generateDailyTickBoxes(existingCompletions, options);
     case 'weekly':
-      return generateWeeklyTickBoxes(existingCompletions);
+      return generateWeeklyTickBoxes(existingCompletions, options);
     case 'monthly':
-      return generateMonthlyTickBoxes(existingCompletions);
+      return generateMonthlyTickBoxes(existingCompletions, options);
     default:
       return [];
   }

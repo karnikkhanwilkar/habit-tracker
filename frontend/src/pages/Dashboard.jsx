@@ -187,7 +187,7 @@ const Dashboard = () => {
 											/>
 										</Box>
 										<Typography variant="body2" color="text.secondary">Frequency: {h.frequency}</Typography>
-										<HabitTickBoxes habit={h} onUpdate={handleHabitUpdate} />
+											<HabitTickBoxes habit={h} onUpdate={handleHabitUpdate} rangeFromCreated futureDays={7} />
 									</CardContent>
 									<CardActions>
 										<Button component={Link} to={`/habits/${h._id}`}>Edit</Button>

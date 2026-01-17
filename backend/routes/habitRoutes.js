@@ -1,5 +1,6 @@
 const express = require('express');
 const { body, param } = require('express-validator');
+const { reminderTestLimiter } = require('../middleware/rateLimiter');
 const auth = require('../middleware/authMiddleware');
 const { createHabit, getHabits, updateHabit, deleteHabit, toggleCompletion, getHabitStreak, getHabitStats, getDashboardSummary, updateHabitReminder, testHabitReminder } = require('../controllers/habitController');
 
@@ -62,6 +63,6 @@ router.put('/:id/reminder', [
 ], updateHabitReminder);
 
 // ⏰ Test sending a reminder email
-router.post('/:id/reminder/test', [param('id').isMongoId().withMessage('Invalid habit id')], testHabitReminder);
+router.post('/:id/reminder/test', reminderTestLimiter, [param('id').isMongoId().withMessage('Invalid habit id')], testHabitReminder);
 
 module.exports = router;
